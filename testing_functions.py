@@ -76,11 +76,12 @@ def showGreenImages_getBinaryImages(test_data, test_index, estimates_allimages):
     
     return binary_images
 
-def showBoundingBox(binary_images):
+def showBoundingBox(binary_images, extent_clip):
     
     test_num = len(binary_images)
     
     for i in range(test_num):
+        print('image {}'.format(i))
         # Extract one image data
         img = makeImage(binary_images[i].copy())
         imgray = cv2.cvtColor(img,cv2.COLOR_RGB2GRAY)
@@ -88,8 +89,29 @@ def showBoundingBox(binary_images):
         
         # Areas of all contours
         areas = [cv2.contourArea(c) for c in contours]
-        # Contour that has the biggest area
+        # Set contour: Contour that has the biggest area
         cnt = contours[np.argmax(areas)]
+        
+        #Test another contour-decision metohd:
+        n = len(areas)
+        areas_descend_ind = np.argsort(-1*np.array(areas))[:n]
+        
+        for j in range(n):
+            #if (j>0): break
+            index = areas_descend_ind[j]
+            area = areas[index]
+            cnt = contours[index]
+            rect = cv2.minAreaRect(cnt)
+            box = cv2.boxPoints(rect)
+            box = np.int0(box)
+            boxarea = cv2.contourArea(box)   
+            extent = area/(boxarea+0.0001)
+            print(extent)
+            if extent > 0.55:
+                break
+            
+
+         
         
         # Draw rotated bounding box
         rect = cv2.minAreaRect(cnt)
@@ -101,6 +123,8 @@ def showBoundingBox(binary_images):
         
         plt.figure()
         plt.imshow(boxedImage)
+        plt.title('{}'.format(extent))
+                  
         
     
     
