@@ -39,6 +39,43 @@ def computeGaussian(train_data, class_num):
         class_objs.append(ColorClass(mean,covar,prior))
         
     return class_objs
+
+
+def equalization(data):
+    sample_num, pixel_num = data.shape[:2]
+    equalized_data = data.copy()
+    
+    labels = data[:,:,3]
+    images = data[:,:,0:3]
+    
+    for i in range(sample_num):
+        image = images[i].reshape(1200,900,3).astype('uint8')
+        
+        image_ycrcb = cv2.cvtColor(image, cv2.COLOR_RGB2YCrCb)
+        image_y = image_ycrcb[:,:,0]
+        
+        # adaptive histogram
+        #equ = cv2.equalizeHist(image_y)
+        
+        # clahe
+        clahe = cv2.createCLAHE(clipLimit=1.0, tileGridSize=(8,8))
+        equ = clahe.apply(image_y)
+        
+        equ_ycrcb = image_ycrcb.copy()
+        equ_ycrcb[:,:,0] = equ
+        final = cv2.cvtColor(equ_ycrcb, cv2.COLOR_YCrCb2RGB)
+        final_vector = final.reshape(pixel_num,3).astype('int')
+        
+        equalized_data[i,:,0:3] = final_vector
+    
+    return equalized_data
+        
+        
+     
+        
+        
+        
+    
         
         
 
